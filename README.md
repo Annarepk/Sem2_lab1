@@ -1,222 +1,378 @@
 # Лабораторная работа №1
 
-_Последовательности и динамические массивы_
+_Операции с кольцевыми матрицами и пользовательскими типами данных_
 
 ---
 
 ## Постановка задачи
 
-Реализовать иерархию классов для представления линейных структур данных с использованием шаблонов.  
-Система должна включать:
-- абстрактный интерфейс `Sequence`
-- конкретные реализации на основе динамического массива (`ArraySequence`)
-- собственную реализацию динамического массива (`DynamicArray`)
-- модульные тесты на основные операции
+Разработать программу для выполнения операций над кольцевыми матрицами, хранящими элементы различных типов (`int`, `float`).  
+Система должна поддерживать:
+- ввод и вывод матриц
+- выполнение арифметических операций (сложение, вычитание, умножение)
+- работу с элементами произвольного пользовательского типа
+- отображение информации о кольцевых матрицах
 
 ---
 
 ## Описание решения
 
-### `DynamicArray<T>` — шаблонный динамический массив
-```cpp
-template<typename T>
-class DynamicArray {
-public:
-    DynamicArray(int size);
-    DynamicArray(const T* items, int count);
-    DynamicArray(const DynamicArray<T>& other);
+---
 
-    T Get(int index) const;
-    int GetSize() const;
+### Int.h / Int.c
 
-    void Set(int index, T value);
-    void Resize(int newSize);
-
-    DynamicArray<T>& operator=(const DynamicArray<T>& other);
-};
+#### Структура `Int`
+```c
+typedef struct Int {
+    RingInfo *ringInfo;
+    int integer;
+} Int;
 ```
 
-- `DynamicArray(size: int)`  
-    > Создаёт массив заданного размера  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **size** — количество элементов
+##### Поля:
+- `ringInfo` — указатель на структуру `RingInfo`, описывающую операции кольца
+- `integer` — целое значение, хранящееся в объекте
 
-- `DynamicArray(items: const T*, count: int)`  
-    > Создаёт массив из переданного указателя на элементы  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **items** — массив данных  
-    >   * **count** — число элементов
+#### Функции:
 
-- `DynamicArray(const DynamicArray& other)`  
-    > Конструктор копирования  
+- `void* sumInt(void* x, void* y)`  
+    > Складывает два значения типа `Int`  
     >
     > _ПАРАМЕТРЫ:_  
-    >   * **other** — другой массив
-
-- `Get(index: int) const -> T`  
-    > Возвращает элемент по индексу  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **index** — индекс элемента  
+    >   * **x**, **y** — указатели на `Int`  
     >
     > _ВОЗВРАЩАЕТ:_  
-    >   * Копия элемента
+    >   * Новый объект `Int`, содержащий сумму
 
-- `GetSize() const -> int`  
-    > Возвращает количество элементов  
+- `void* minusInt(void* x)`  
+    > Возвращает противоположное значение для `Int`  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **x** — указатель на `Int`  
     >
     > _ВОЗВРАЩАЕТ:_  
-    >   * Размер массива
+    >   * Новый `Int` с противоположным значением
 
-- `Set(index: int, value: T)`  
-    > Устанавливает значение по индексу  
+- `void* multiInt(void* x, void* y)`  
+    > Умножает два объекта типа `Int`  
     >
     > _ПАРАМЕТРЫ:_  
-    >   * **index** — индекс  
-    >   * **value** — новое значение
+    >   * **x**, **y** — указатели на `Int`  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Результат умножения (`Int*`)
 
-- `Resize(newSize: int)`  
-    > Изменяет размер массива  
+- `void printInt(void* integer)`  
+    > Выводит значение `Int` на экран  
     >
     > _ПАРАМЕТРЫ:_  
-    >   * **newSize** — новый размер
+    >   * **integer** — указатель на `Int`
+
+- `void* zeroInt()`  
+    > Возвращает нулевой элемент кольца (`0`)  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Новый `Int`, содержащий 0
+
+- `void* oneInt()`  
+    > Возвращает единичный элемент кольца (`1`)  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Новый `Int`, содержащий 1
+
+- `void* getInt(int value)`  
+    > Создаёт `Int` с заданным значением  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **value** — целое значение  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Новый `Int`
+
+- `void* collectInt(int value)`  
+    > Выделяет память и инициализирует `Int` со всеми операциями кольца  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **value** — целое значение  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Указатель на `Int`
 
 ---
 
-### `Sequence<T>` — абстрактный интерфейс последовательности
-```cpp
-template<typename T>
-class Sequence {
-public:
-    virtual T GetFirst() const = 0;
-    virtual T GetLast() const = 0;
-    virtual T Get(int index) const = 0;
-    virtual int GetLength() const = 0;
+### Float.h / Float.c
 
-    virtual void Append(const T& item) = 0;
-    virtual void Prepend(const T& item) = 0;
-    virtual void InsertAt(const T& item, int index) = 0;
-    virtual Sequence<T>* GetSubsequence(int startIndex, int endIndex) const = 0;
-
-    virtual Sequence<T>* Clone() const = 0;
-
-    virtual ~Sequence() = default;
-};
+#### Структура `Float`
+```c
+typedef struct Float {
+    RingInfo *ringInfo;
+    float real;
+} Float;
 ```
 
-- `GetFirst() const -> T`  
-    > Возвращает первый элемент последовательности  
-    >
-    > _ВОЗВРАЩАЕТ:_  
-    >   * Первый элемент
+##### Поля:
+- `ringInfo` — указатель на структуру `RingInfo`, содержащую операции кольца
+- `real` — число с плавающей точкой (`float`), хранимое в объекте
 
-- `GetLast() const -> T`  
-    > Возвращает последний элемент  
-    >
-    > _ВОЗВРАЩАЕТ:_  
-    >   * Последний элемент
+#### Функции:
 
-- `Get(index: int) const -> T`  
-    > Возвращает элемент по индексу  
+- `void* sumFloat(void* x, void* y)`  
+    > Складывает два значения типа `Float`  
     >
     > _ПАРАМЕТРЫ:_  
-    >   * **index** — индекс  
+    >   * **x**, **y** — указатели на `Float`  
     >
     > _ВОЗВРАЩАЕТ:_  
-    >   * Копия элемента
+    >   * Новый объект `Float`, содержащий сумму
 
-- `GetLength() const -> int`  
-    > Возвращает длину последовательности  
+- `void* minusFloat(void* x)`  
+    > Возвращает противоположное значение для `Float`  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **x** — указатель на `Float`  
     >
     > _ВОЗВРАЩАЕТ:_  
-    >   * Количество элементов
+    >   * Новый `Float` с противоположным значением
 
-- `Append(item: const T&)`  
-    > Добавляет элемент в конец  
+- `void* multiFloat(void* x, void* y)`  
+    > Умножает два объекта типа `Float`  
     >
     > _ПАРАМЕТРЫ:_  
-    >   * **item** — значение для добавления
-
-- `Prepend(item: const T&)`  
-    > Добавляет элемент в начало  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **item** — значение для добавления
-
-- `InsertAt(item: const T&, index: int)`  
-    > Вставляет элемент по индексу  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **item** — значение  
-    >   * **index** — позиция вставки
-
-- `GetSubsequence(startIndex: int, endIndex: int) const -> Sequence<T>*`  
-    > Возвращает подпоследовательность  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **startIndex** — начальный индекс  
-    >   * **endIndex** — конечный индекс  
+    >   * **x**, **y** — указатели на `Float`  
     >
     > _ВОЗВРАЩАЕТ:_  
-    >   * Указатель на новую подпоследовательность
+    >   * Результат умножения (`Float*`)
 
-- `Clone() const -> Sequence<T>*`  
-    > Клонирует текущую последовательность  
+- `void printFloat(void* value)`  
+    > Выводит значение `Float` на экран с точностью до 3 знаков после запятой  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **value** — указатель на `Float`
+
+- `void* randomFloat()`  
+    > Генерирует случайное значение `Float` в диапазоне приблизительно от 1 до 100  
     >
     > _ВОЗВРАЩАЕТ:_  
-    >   * Новый объект `Sequence`
+    >   * Новый `Float` со случайным значением
+
+- `void* zeroFloat()`  
+    > Возвращает нулевой элемент кольца (`0.0`)  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Новый `Float`, содержащий 0.0
+
+- `void* oneFloat()`  
+    > Возвращает единичный элемент кольца (`1.0`)  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Новый `Float`, содержащий 1.0
+
+- `void* getFloat(float value)`  
+    > Создаёт `Float` с заданным значением  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **value** — значение `float`  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Новый `Float`
+
+- `void* collectFloat(float value)`  
+    > Выделяет память и инициализирует `Float` с нужными операциями кольца  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **value** — значение `float`  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Указатель на `Float`
 
 ---
 
-### `ArraySequence<T>` — реализация `Sequence` на основе `DynamicArray`
-```cpp
-template<typename T>
-class ArraySequence : public Sequence<T> {
-public:
-    ArraySequence();
-    ArraySequence(const T* items, int count);
-    ArraySequence(const DynamicArray<T>& array);
+### Matrix.h / Matrix.c
 
-    T GetFirst() const override;
-    T GetLast() const override;
-    T Get(int index) const override;
-    int GetLength() const override;
-
-    void Append(const T& item) override;
-    void Prepend(const T& item) override;
-    void InsertAt(const T& item, int index) override;
-    Sequence<T>* GetSubsequence(int startIndex, int endIndex) const override;
-
-    Sequence<T>* Clone() const override;
-};
+#### Структура `Element`
+```c
+typedef struct Element {
+    RingInfo *ringInfo;
+    void *value;
+} Element;
 ```
 
-- `ArraySequence()`  
-    > Конструктор по умолчанию (пустая последовательность)
-
-- `ArraySequence(items: const T*, count: int)`  
-    > Конструктор из массива  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **items** — указатель на массив  
-    >   * **count** — количество элементов
-
-- `ArraySequence(array: const DynamicArray<T>&)`  
-    > Конструктор из `DynamicArray`  
-    >
-    > _ПАРАМЕТРЫ:_  
-    >   * **array** — динамический массив
-
-_*описание всех override-методов аналогично интерфейсу `Sequence`_
+##### Поля:
+- `ringInfo` — указатель на кольцо, описывающее операции над значением
+- `value` — указатель на значение (`Int*`, `Float*` и др.)
 
 ---
 
-## Тестирование
+#### Структура `Matrix`
+```c
+typedef struct Matrix {
+    Element **data;
+    int size;
+} Matrix;
+```
 
-Для проверки корректности реализованы модульные тесты в файле `Tests.hpp`, охватывающие:
+##### Поля:
+- `data` — одномерный массив указателей на `Element` (размером `size × size`)
+- `size` — размер квадратной матрицы
 
-- граничные случаи работы с `DynamicArray` и `ArraySequence`
-- добавление, вставку, удаление, получение элементов
-- корректность `GetSubsequence()` и `Clone()`
+---
+
+#### Создание
+
+- `Matrix* randomMatrix(RingInfo* ringInfo, int size)`  
+    > Создаёт квадратную матрицу заданного размера со случайными значениями  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **ringInfo** — описание операций кольца  
+    >   * **size** — размер матрицы  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Указатель на новую `Matrix`
+
+- `Matrix* E(RingInfo* ringInfo, int size)`  
+    > Создаёт единичную матрицу  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Матрица, в которой диагональ содержит `one`, остальные — `zero`
+
+- `Element* collectElement(RingInfo* ringInfo, void* value)`  
+    > Оборачивает значение в `Element`  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **ringInfo** — ссылка на кольцо  
+    >   * **value** — значение (`Int*`, `Float*`)  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Новый элемент
+
+---
+
+#### Декомпозиция
+
+- `Element** getLine(int lineNumber, Matrix* matrix)`  
+    > Возвращает строку матрицы по номеру (нумерация с 1)  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **lineNumber** — номер строки  
+    >   * **matrix** — указатель на матрицу  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Массив указателей на `Element`
+
+- `Element** getColumn(int columnNumber, Matrix* matrix)`  
+    > Возвращает столбец матрицы по номеру (нумерация с 1)
+
+---
+
+#### Операции
+
+- `Matrix* sumMatrix(Matrix* matrix1, Matrix* matrix2)`  
+    > Складывает две матрицы поэлементно  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Результат записывается в `matrix1`
+
+- `Matrix* multiMatrix(Matrix* matrix1, Matrix* matrix2)`  
+    > Умножает две матрицы по правилам линейной алгебры  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Результат сохраняется в `matrix1`
+
+- `Matrix* multiScalar(Matrix* matrix, void* multiplier)`  
+    > Умножает все элементы матрицы на заданное значение  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **multiplier** — значение (`Int*`, `Float*`)  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Результат сохраняется в `matrix`
+
+- `Matrix* sumLine(Matrix* matrix, int line1, int line2, void* multiplier)`  
+    > Складывает строку `line2`, умноженную на `multiplier`, к строке `line1`
+
+---
+
+#### Вывод
+
+- `void printMatrix(Matrix* matrix)`  
+    > Выводит всю матрицу в табличной форме
+
+- `void printLine(Element** line, int size)`  
+    > Выводит одну строку матрицы
+
+- `void printColumn(Element** column, int size)`  
+    > Выводит один столбец матрицы
+
+---
+
+### RingInfo.h / RingInfo.c
+
+#### Структура `RingInfo`
+```c
+typedef struct RingInfo {
+    void *(*sum)(void *, void *);
+    void *(*zero)();
+    void *(*minus)(void *);
+    void *(*multi)(void *, void *);
+    void (*printValue)(void *);
+    void *(*randomValue)();
+    void *(*getType)();
+    void *(*one)();
+} RingInfo;
+```
+
+##### Поля:
+- `sum` — функция сложения двух элементов
+- `zero` — функция, возвращающая нулевой элемент
+- `minus` — функция, возвращающая противоположный элемент
+- `multi` — функция умножения двух элементов
+- `printValue` — функция вывода элемента
+- `randomValue` — функция генерации случайного значения
+- `getType` — функция получения значения из пользовательского типа
+- `one` — функция, возвращающая единичный элемент
+
+#### Функции:
+
+- `RingInfo* Create(...)`  
+    > Создаёт структуру `RingInfo` с набором указателей на функции операций кольца  
+    >
+    > _ПАРАМЕТРЫ:_  
+    >   * **sum** — операция сложения  
+    >   * **zero** — функция, возвращающая 0  
+    >   * **minus** — операция унарного минуса  
+    >   * **multi** — операция умножения  
+    >   * **printValue** — функция вывода  
+    >   * **randomValue** — генератор случайного значения  
+    >   * **getType** — функция создания значения из базового типа  
+    >   * **one** — функция, возвращающая 1  
+    >
+    > _ВОЗВРАЩАЕТ:_  
+    >   * Указатель на инициализированную структуру `RingInfo`
+
+
+---
+
+### Menu.h
+
+#### Функции пользовательского интерфейса
+
+- `void selectType()`  
+    > Отображает меню выбора типа значений  
+    >
+    > Предлагает пользователю выбрать:
+    > 
+    > 1 — целые числа  
+    >   
+    > 2 — числа с плавающей точкой
+
+- `void selectAction()`  
+    > Отображает список доступных операций над матрицами:
+    >
+    > 1. Случайная единичная матрица  
+    > 2. Получить строку  
+    > 3. Получить столбец  
+    > 4. Сложение матриц  
+    > 5. Умножение матриц  
+    > 6. Умножение на скаляр  
+    > 7. Прибавить к строке линейную комбинацию другой строки
+
